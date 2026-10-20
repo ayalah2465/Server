@@ -1,3 +1,4 @@
+using ConcertBooking.Application.Bookings;
 using ConcertBooking.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -16,6 +17,7 @@ public static class DependencyInjection
         }
 
         services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString));
+        services.AddScoped<IBookingRepository, BookingRepository>();
         services.AddScoped<DatabaseInitializer>();
         return services;
     }

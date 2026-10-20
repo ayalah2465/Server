@@ -26,6 +26,6 @@ in middleware. Avoid duplicate logic and unnecessary abstractions.
 הלוגיקה העסקית תרוכז בשירותים, המיפויים ב־Profiles והשגיאות ב־middleware,
 תוך הימנעות מכפילות ומהפשטות מיותרות.
 
-Current gate: Stage 3 completed (5 architecture + 10 PostgreSQL integration cases passed). Wait for approval before Stage 4.
+Current gate: Stage 4 completed. Transactional booking and optimistic concurrency tests passed. Wait for approval before Stage 5.
 
-מצב נוכחי: שלב 3 הושלם (5 בדיקות ארכיטקטורה ו־10 בדיקות PostgreSQL עברו). נדרש אישור לפני שלב 4.
+מצב נוכחי: שלב 4 הושלם. בדיקות הזמנה טרנזקציונית ותחרות אופטימית עברו. נדרש אישור לפני שלב 5.

@@ -5,11 +5,11 @@ ticket prices, and clearly labelled simulated payment. No card details or real p
 
 ## Current stage
 
-Database stage complete: .NET 8, Domain/Application/Infrastructure/API layers,
+Concurrency stage complete: .NET 8, Domain/Application/Infrastructure/API layers,
 xUnit/Moq architecture tests, and PostgreSQL integration tests. Entities, Fluent API
-relationships, the first migration and repeatable demo seed data are implemented.
-Booking operations, concurrency handling, authentication, payment and client behavior
-are not implemented yet; direct database constraints do not replace those workflows.
+relationships, two migrations, repeatable demo seed data, and transactional booking
+logic are implemented. Authentication, API booking endpoints, payment and client
+behavior are not implemented yet.
 The solution uses Clean Architecture: Domain has no external dependencies;
 Application references Domain; Infrastructure references Application; API references
 Application and Infrastructure. API uses Infrastructure only for dependency registration.
@@ -67,7 +67,22 @@ The integration tests require real PostgreSQL and deliberately fail when this va
 is absent. Each test creates and drops its own randomly named `concert_test_*` database;
 the configured application database is not reset. Ten integration cases verify fresh
 migrations, model consistency, repeatable seed data, relationships, UTC reads, and
-database constraints. Five architecture cases verify dependency boundaries.
+database constraints and concurrent booking behavior. Architecture cases verify
+dependency boundaries and keep Application independent of EF Core.
+
+## Limited resource and concurrency
+
+The limited resource is a concert's remaining capacity. `Concert.Version` is an
+application-managed `Guid` concurrency token introduced in the second migration.
+`AppDbContext` changes it centrally whenever a concert is updated, so EF Core includes
+the previous value in the update condition. Booking reads the concert and validates
+the user, start time, capacity and duplicate booking inside one transaction. It then
+increments `BookedSeats` and inserts the booking in the same save. If two users read
+the final seat, the first transaction commits and the second update matches no row.
+Infrastructure catches `DbUpdateConcurrencyException` and converts it to the
+Application conflict type. The service returns `BookingFailure.Conflict`; the API will
+map it to HTTP 409 in Stage 6. A PostgreSQL integration test proves that exactly one
+booking and one occupied seat remain after the race.
 
 To add a later migration, use the pinned local EF tool:
 

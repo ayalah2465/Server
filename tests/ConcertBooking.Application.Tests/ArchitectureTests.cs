@@ -38,6 +38,17 @@ public class ArchitectureTests
         Assert.Empty(LoadProject("Domain").Descendants("PackageReference"));
     }
 
+    [Fact]
+    public void Application_does_not_depend_on_entity_framework()
+    {
+        var packages = LoadProject("Application").Descendants("PackageReference")
+            .Select(node => node.Attribute("Include")?.Value ?? string.Empty);
+
+        Assert.DoesNotContain(packages, package =>
+            package.StartsWith("Microsoft.EntityFrameworkCore", StringComparison.OrdinalIgnoreCase) ||
+            package.StartsWith("Npgsql", StringComparison.OrdinalIgnoreCase));
+    }
+
     private static XDocument LoadProject(string layer) => XDocument.Load(
         Path.Combine(FindRoot(), "src", $"ConcertBooking.{layer}", $"ConcertBooking.{layer}.csproj"));
 }

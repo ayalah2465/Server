@@ -14,6 +14,7 @@ internal sealed class ConcertConfiguration : IEntityTypeConfiguration<Concert>
         builder.Property(concert => concert.Venue).HasMaxLength(200).IsRequired();
         builder.Property(concert => concert.StartsAtUtc).HasColumnType("timestamp with time zone");
         builder.Property(concert => concert.TicketPrice).HasPrecision(10, 2);
+        builder.Property(concert => concert.Version).IsConcurrencyToken();
         builder.HasIndex(concert => concert.StartsAtUtc);
         builder.ToTable("Concerts", table =>
         {

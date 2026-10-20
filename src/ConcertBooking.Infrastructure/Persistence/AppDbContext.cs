@@ -14,4 +14,12 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
     }
+
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        foreach (var entry in ChangeTracker.Entries<Concert>().Where(entry => entry.State == EntityState.Modified))
+            entry.Entity.Version = Guid.NewGuid();
+
+        return base.SaveChangesAsync(cancellationToken);
+    }
 }

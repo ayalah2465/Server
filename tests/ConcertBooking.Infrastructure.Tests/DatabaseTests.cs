@@ -1,5 +1,6 @@
 using ConcertBooking.Domain.Entities;
 using ConcertBooking.Domain.Enums;
+using ConcertBooking.Application.Bookings;
 using ConcertBooking.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
@@ -39,13 +40,16 @@ public sealed class DatabaseTests : IAsyncLifetime
     private AppDbContext CreateContext() => new(new DbContextOptionsBuilder<AppDbContext>()
         .UseNpgsql(testConnectionString).Options);
 
+    private BookingService CreateBookingService(AppDbContext dbContext) =>
+        new(new BookingRepository(dbContext), TimeProvider.System);
+
     [Fact]
     public async Task Migrations_create_a_fresh_database_without_pending_model_changes()
     {
         await using var db = CreateContext();
         await db.Database.MigrateAsync();
 
-        Assert.NotEmpty(await db.Database.GetAppliedMigrationsAsync());
+        Assert.Equal(2, (await db.Database.GetAppliedMigrationsAsync()).Count());
         Assert.Empty(await db.Database.GetPendingMigrationsAsync());
         Assert.False(db.Database.HasPendingModelChanges());
         Assert.Equal(0, await db.Users.CountAsync());
@@ -163,9 +167,94 @@ public sealed class DatabaseTests : IAsyncLifetime
         Assert.Equal(PostgresErrorCodes.UniqueViolation, Assert.IsType<PostgresException>(error.InnerException).SqlState);
     }
 
-    private static User NewUser() => new()
+    [Fact]
+    public async Task Two_contexts_updating_the_same_concert_detect_the_second_save()
     {
-        Email = "test@example.invalid", NormalizedEmail = "TEST@EXAMPLE.INVALID",
+        await using (var setup = CreateContext())
+            await new DatabaseInitializer(setup).InitializeAsync();
+
+        await using var first = CreateContext();
+        await using var second = CreateContext();
+        var firstConcert = await first.Concerts.SingleAsync();
+        var secondConcert = await second.Concerts.SingleAsync();
+        var originalVersion = firstConcert.Version;
+        firstConcert.BookedSeats++;
+        secondConcert.BookedSeats++;
+
+        await first.SaveChangesAsync();
+        var exception = await Assert.ThrowsAsync<DbUpdateConcurrencyException>(() => second.SaveChangesAsync());
+
+        Assert.Single(exception.Entries);
+        Assert.NotEqual(originalVersion, firstConcert.Version);
+        await using var verification = CreateContext();
+        Assert.Equal(1, await verification.Concerts.Select(concert => concert.BookedSeats).SingleAsync());
+    }
+
+    [Fact]
+    public async Task Two_users_competing_for_last_seat_produce_one_booking_and_one_conflict()
+    {
+        Guid concertId;
+        Guid firstUserId;
+        Guid secondUserId;
+        await using (var setup = CreateContext())
+        {
+            await new DatabaseInitializer(setup).InitializeAsync();
+            var concert = await setup.Concerts.SingleAsync();
+            concert.Capacity = 1;
+            var firstUser = NewUser("first@example.invalid");
+            var secondUser = NewUser("second@example.invalid");
+            setup.Users.AddRange(firstUser, secondUser);
+            await setup.SaveChangesAsync();
+            concertId = concert.Id;
+            firstUserId = firstUser.Id;
+            secondUserId = secondUser.Id;
+        }
+
+        await using var firstContext = CreateContext();
+        await using var secondContext = CreateContext();
+        var firstRepository = new CoordinatedBookingRepository(new BookingRepository(firstContext));
+        var secondRepository = new CoordinatedBookingRepository(new BookingRepository(secondContext));
+        var firstService = new BookingService(firstRepository, TimeProvider.System);
+        var secondService = new BookingService(secondRepository, TimeProvider.System);
+
+        var firstTask = firstService.BookAsync(firstUserId, concertId);
+        var secondTask = secondService.BookAsync(secondUserId, concertId);
+        await Task.WhenAll(firstRepository.Ready, secondRepository.Ready);
+        firstRepository.Release();
+        var firstResult = await firstTask;
+        secondRepository.Release();
+        var secondResult = await secondTask;
+
+        Assert.True(firstResult.IsSuccess);
+        Assert.Equal(BookingFailure.Conflict, secondResult.Failure);
+        await using var verification = CreateContext();
+        Assert.Equal(1, await verification.Concerts.Select(concert => concert.BookedSeats).SingleAsync());
+        Assert.Equal(1, await verification.Bookings.CountAsync());
+    }
+
+    private static User NewUser(string email = "test@example.invalid") => new()
+    {
+        Email = email, NormalizedEmail = email.ToUpperInvariant(),
         DisplayName = "Test User", PasswordHash = "TEST-ONLY-NOT-A-LOGIN-HASH"
     };
+
+    private sealed class CoordinatedBookingRepository(IBookingRepository inner) : IBookingRepository
+    {
+        private readonly TaskCompletionSource ready = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource release = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public Task Ready => ready.Task;
+        public void Release() => release.TrySetResult();
+        public Task<Concert?> GetConcertForBookingAsync(Guid concertId, CancellationToken cancellationToken) => inner.GetConcertForBookingAsync(concertId, cancellationToken);
+        public Task<bool> UserExistsAsync(Guid userId, CancellationToken cancellationToken) => inner.UserExistsAsync(userId, cancellationToken);
+        public async Task<bool> HasActiveBookingAsync(Guid userId, Guid concertId, CancellationToken cancellationToken)
+        {
+            var result = await inner.HasActiveBookingAsync(userId, concertId, cancellationToken);
+            ready.TrySetResult();
+            await release.Task.WaitAsync(cancellationToken);
+            return result;
+        }
+        public void Add(Booking booking) => inner.Add(booking);
+        public Task SaveChangesAsync(CancellationToken cancellationToken) => inner.SaveChangesAsync(cancellationToken);
+        public Task<IApplicationTransaction> BeginTransactionAsync(CancellationToken cancellationToken) => inner.BeginTransactionAsync(cancellationToken);
+    }
 }
