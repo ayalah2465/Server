@@ -40,9 +40,6 @@ public sealed class DatabaseTests : IAsyncLifetime
     private AppDbContext CreateContext() => new(new DbContextOptionsBuilder<AppDbContext>()
         .UseNpgsql(testConnectionString).Options);
 
-    private BookingService CreateBookingService(AppDbContext dbContext) =>
-        new(new BookingRepository(dbContext), TimeProvider.System);
-
     [Fact]
     public async Task Migrations_create_a_fresh_database_without_pending_model_changes()
     {
