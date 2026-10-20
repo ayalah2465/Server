@@ -10,8 +10,8 @@ xUnit/Moq architecture tests, and PostgreSQL integration tests. Entities, Fluent
 relationships, two migrations, repeatable demo seed data, and transactional booking
 logic are implemented. Registration, login, JWT validation and User/Admin authorization
 are also implemented. Concert and instrument CRUD, database filtering/sorting/pagination,
-booking API endpoints and clearly labelled simulated payment are implemented. The React
-client is not implemented yet.
+booking API endpoints and clearly labelled simulated payment are implemented. A separate
+React and TypeScript client is implemented in the companion `Client` repository.
 The solution uses Clean Architecture: Domain has no external dependencies;
 Application references Domain; Infrastructure references Application; API references
 Application and Infrastructure. API uses Infrastructure only for dependency registration.
@@ -75,6 +75,8 @@ can create bookings at `POST /api/concerts/{concertId}/bookings` with
 `{"approved":true}` and read their booking from the returned Location.
 The flag only demonstrates a successful payment decision; the API never requests or
 stores card information. Swagger UI's **Authorize** button accepts the JWT returned by login.
+Browser access is restricted to origins listed in `AllowedOrigins`; local Vite development
+and preview addresses are configured by default.
 
 Every request receives an `X-Correlation-ID` response header. A safe incoming value is
 preserved; otherwise the API generates one. NLog writes structured JSON without request

@@ -26,12 +26,12 @@ in middleware. Avoid duplicate logic and unnecessary abstractions.
 הלוגיקה העסקית תרוכז בשירותים, המיפויים ב־Profiles והשגיאות ב־middleware,
 תוך הימנעות מכפילות ומהפשטות מיותרות.
 
-Current gate: Stage 7 completed. Uniform JSON failures, CorrelationId propagation,
-structured NLog output, conflict warnings and log redaction tests passed. Wait for approval
-before Stage 8.
+Current gate: Stage 8 completed. The separate React client passed its unit, production-build
+and Chromium end-to-end checks against the real API and PostgreSQL. Wait for approval before
+Stage 9.
 Stage 9 includes the approved optional setup script and Visual Studio verification.
 
-מצב נוכחי: שלב 7 הושלם. בדיקות שגיאות JSON אחידות, העברת CorrelationId,‏
-פלט NLog מובנה, אזהרות התנגשות ומניעת רישום סודות עברו. נדרש אישור לפני שלב 8.
+מצב נוכחי: שלב 8 הושלם. לקוח React הנפרד עבר בדיקות יחידה, production build ובדיקת
+Chromium מקצה לקצה מול ה־API האמיתי ו־PostgreSQL. נדרש אישור לפני שלב 9.
 שלב 9 כולל את
 סקריפט ההכנה האופציונלי ואת בדיקת התאימות ל־Visual Studio שאושרו.

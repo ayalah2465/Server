@@ -85,4 +85,4 @@ Tests: run all relevant suites, verify at least two migrations, reproduce setup 
 
 ## 5. Current status and next gate
 
-Stages 1–7 are complete. The Stage 7 gate passed 23 Application tests, 12 PostgreSQL Infrastructure tests and 8 API tests. Uniform JSON failures, CorrelationId propagation, structured NLog output, conflict warnings and secret-exclusion checks are implemented. Wait for the student’s approval before Stage 8. After every subsequent stage, summarize changes, test results, and limitations, then request approval for the next stage.
+Stages 1–8 are complete. The separate React client implements registration, login, server pagination, details, simulated booking and visible conflict handling. Unit tests, a production build and a Chromium end-to-end flow against the real API and PostgreSQL passed. Wait for the student’s approval before Stage 9, which performs final submission, Visual Studio, setup and deployment work.
