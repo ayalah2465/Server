@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConcertBooking.Application.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConcertBooking.Infrastructure.Tests", "tests\ConcertBooking.Infrastructure.Tests\ConcertBooking.Infrastructure.Tests.csproj", "{C6E8B0CD-59CE-4E54-B69D-7453307CB4FD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConcertBooking.API.Tests", "tests\ConcertBooking.API.Tests\ConcertBooking.API.Tests.csproj", "{971A36B2-1CC4-4B78-9AB1-09C73534C2E1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -101,6 +103,18 @@ Global
 		{C6E8B0CD-59CE-4E54-B69D-7453307CB4FD}.Release|x64.Build.0 = Release|Any CPU
 		{C6E8B0CD-59CE-4E54-B69D-7453307CB4FD}.Release|x86.ActiveCfg = Release|Any CPU
 		{C6E8B0CD-59CE-4E54-B69D-7453307CB4FD}.Release|x86.Build.0 = Release|Any CPU
+		{971A36B2-1CC4-4B78-9AB1-09C73534C2E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{971A36B2-1CC4-4B78-9AB1-09C73534C2E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{971A36B2-1CC4-4B78-9AB1-09C73534C2E1}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{971A36B2-1CC4-4B78-9AB1-09C73534C2E1}.Debug|x64.Build.0 = Debug|Any CPU
+		{971A36B2-1CC4-4B78-9AB1-09C73534C2E1}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{971A36B2-1CC4-4B78-9AB1-09C73534C2E1}.Debug|x86.Build.0 = Debug|Any CPU
+		{971A36B2-1CC4-4B78-9AB1-09C73534C2E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{971A36B2-1CC4-4B78-9AB1-09C73534C2E1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{971A36B2-1CC4-4B78-9AB1-09C73534C2E1}.Release|x64.ActiveCfg = Release|Any CPU
+		{971A36B2-1CC4-4B78-9AB1-09C73534C2E1}.Release|x64.Build.0 = Release|Any CPU
+		{971A36B2-1CC4-4B78-9AB1-09C73534C2E1}.Release|x86.ActiveCfg = Release|Any CPU
+		{971A36B2-1CC4-4B78-9AB1-09C73534C2E1}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -112,5 +126,6 @@ Global
 		{E9D935B3-4B69-4EA3-A558-8B74DF98901B} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{DB7304B5-08BB-4562-833D-E780B13E99A0} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 		{C6E8B0CD-59CE-4E54-B69D-7453307CB4FD} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
+		{971A36B2-1CC4-4B78-9AB1-09C73534C2E1} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 	EndGlobalSection
 EndGlobal

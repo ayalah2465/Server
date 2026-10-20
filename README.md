@@ -5,11 +5,12 @@ ticket prices, and clearly labelled simulated payment. No card details or real p
 
 ## Current stage
 
-Concurrency stage complete: .NET 8, Domain/Application/Infrastructure/API layers,
+Authentication stage complete: .NET 8, Domain/Application/Infrastructure/API layers,
 xUnit/Moq architecture tests, and PostgreSQL integration tests. Entities, Fluent API
 relationships, two migrations, repeatable demo seed data, and transactional booking
-logic are implemented. Authentication, API booking endpoints, payment and client
-behavior are not implemented yet.
+logic are implemented. Registration, login, JWT validation and User/Admin authorization
+are also implemented. Concert CRUD, API booking endpoints, payment and client behavior
+are not implemented yet.
 The solution uses Clean Architecture: Domain has no external dependencies;
 Application references Domain; Infrastructure references Application; API references
 Application and Infrastructure. API uses Infrastructure only for dependency registration.
@@ -27,6 +28,7 @@ Do not use this development database role or these credentials in production.
 docker compose up -d --wait
 dotnet tool restore
 dotnet user-secrets set "ConnectionStrings:Default" "Host=localhost;Port=5432;Database=concert_booking;Username=concert_dev;Password=<the-local-password>" --project src/ConcertBooking.API
+dotnet user-secrets set "Jwt:SigningKey" "<a-random-key-of-at-least-32-characters>" --project src/ConcertBooking.API
 ```
 
 Replace the placeholder locally. Do not share or commit the actual connection string.
@@ -47,8 +49,23 @@ For development startup and the OpenAPI check, set `ASPNETCORE_ENVIRONMENT=Devel
 Swagger UI is available at `/swagger` in development. Database initialization applies
 the committed migrations and creates one demo concert linked to Piano, Violin and
 Flute. Repeating it preserves edits and creates no duplicate demo data. Concert dates
-are generated in UTC on first initialization. Demo login accounts will be added in
-the authentication stage; none are currently seeded.
+are generated in UTC on first initialization.
+
+The initializer creates disposable public demo accounts required by the assignment:
+
+| Role | Email | Demo password |
+|---|---|---|
+| User | `user@concert.local` | `DemoUser123!` |
+| Admin | `admin@concert.local` | `DemoAdmin123!` |
+
+These credentials are intentionally public demonstration data, not secrets. They must
+not be reused for real accounts. Registration always creates a User account; the Admin
+role cannot be selected by a registration request.
+
+Authentication routes are `POST /api/auth/register` and `POST /api/auth/login`.
+JWTs contain the user ID, email, display name and role, expire after the configured
+period, and are validated for issuer, audience, signature and lifetime. The signing
+key is required through User Secrets or `Jwt__SigningKey`; it is not stored in Git.
 
 ### Tests
 
@@ -63,11 +80,12 @@ PostgreSQL connection string whose role can create databases, then run:
 dotnet test ConcertBooking.sln --no-build
 ```
 
-The integration tests require real PostgreSQL and deliberately fail when this variable
+The integration and API tests require real PostgreSQL and deliberately fail when this variable
 is absent. Each test creates and drops its own randomly named `concert_test_*` database;
-the configured application database is not reset. Ten integration cases verify fresh
-migrations, model consistency, repeatable seed data, relationships, UTC reads, and
-database constraints and concurrent booking behavior. Architecture cases verify
+the configured application database is not reset. Infrastructure cases verify fresh
+migrations, model consistency, repeatable seed data, relationships, UTC reads, database
+constraints and concurrent booking behavior. API cases verify registration, login and
+role authorization. Architecture cases verify
 dependency boundaries and keep Application independent of EF Core.
 
 ## Limited resource and concurrency
@@ -95,3 +113,7 @@ stops the database and retains its volume; avoid `down -v` unless deletion is in
 
 See [the bilingual plan](PLAN.md). Each server stage requires tests and approval
 before the next stage. The client stage has no intermediate approval gates.
+
+At the final submission stage, the repository will also receive an optional setup
+script and explicit Visual Studio instructions. Manual commands will remain documented,
+so the script is a convenience rather than a requirement.

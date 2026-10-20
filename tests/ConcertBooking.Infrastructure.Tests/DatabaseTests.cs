@@ -69,6 +69,8 @@ public sealed class DatabaseTests : IAsyncLifetime
         }
         await using var verification = CreateContext();
         Assert.Equal(3, await verification.Instruments.CountAsync());
+        Assert.Equal(2, await verification.Users.CountAsync());
+        Assert.Equal(2, await verification.Users.Select(user => user.NormalizedEmail).Distinct().CountAsync());
         var saved = await verification.Concerts.AsNoTracking().Include(concert => concert.Instruments).SingleAsync();
         Assert.Equal("Edited demo title", saved.Title);
         Assert.Equal(3, saved.Instruments.Count);

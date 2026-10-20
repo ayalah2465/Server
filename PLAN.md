@@ -26,6 +26,6 @@ in middleware. Avoid duplicate logic and unnecessary abstractions.
 הלוגיקה העסקית תרוכז בשירותים, המיפויים ב־Profiles והשגיאות ב־middleware,
 תוך הימנעות מכפילות ומהפשטות מיותרות.
 
-Current gate: Stage 4 completed. Transactional booking and optimistic concurrency tests passed. Wait for approval before Stage 5.
+Current gate: Stage 5 completed. Registration, JWT and User/Admin authorization tests passed. Wait for approval before Stage 6. Stage 9 includes the approved optional setup script and Visual Studio verification.
 
-מצב נוכחי: שלב 4 הושלם. בדיקות הזמנה טרנזקציונית ותחרות אופטימית עברו. נדרש אישור לפני שלב 5.
+מצב נוכחי: שלב 5 הושלם. בדיקות הרשמה, JWT והרשאות User/Admin עברו. נדרש אישור לפני שלב 6. שלב 9 כולל את סקריפט ההכנה האופציונלי ואת בדיקת התאימות ל־Visual Studio שאושרו.
