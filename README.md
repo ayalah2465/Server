@@ -5,7 +5,7 @@ ticket prices, and clearly labelled simulated payment. No card details or real p
 
 ## Current stage
 
-REST API stage complete: .NET 8, Domain/Application/Infrastructure/API layers,
+Middleware and logging stage complete: .NET 8, Domain/Application/Infrastructure/API layers,
 xUnit/Moq architecture tests, and PostgreSQL integration tests. Entities, Fluent API
 relationships, two migrations, repeatable demo seed data, and transactional booking
 logic are implemented. Registration, login, JWT validation and User/Admin authorization
@@ -76,6 +76,12 @@ can create bookings at `POST /api/concerts/{concertId}/bookings` with
 The flag only demonstrates a successful payment decision; the API never requests or
 stores card information. Swagger UI's **Authorize** button accepts the JWT returned by login.
 
+Every request receives an `X-Correlation-ID` response header. A safe incoming value is
+preserved; otherwise the API generates one. NLog writes structured JSON without request
+bodies, authorization headers, JWTs or passwords. Resource conflicts are logged at
+Warning and unexpected failures at Error. Unexpected failures return
+`application/problem+json` with the same correlation ID, without exposing exception details.
+
 ### Tests
 
 ```sh
@@ -94,8 +100,9 @@ is absent. Each test creates and drops its own randomly named `concert_test_*` d
 the configured application database is not reset. Infrastructure cases verify fresh
 migrations, model consistency, repeatable seed data, relationships, UTC reads, database
 constraints and concurrent booking behavior. API cases verify registration, login,
-role authorization, admin CRUD, database query behavior, booking ownership and 409
-conflicts. Architecture and service cases verify
+role authorization, admin CRUD, database query behavior, booking ownership, 409
+conflicts, uniform error JSON, correlation IDs, log levels and secret exclusion.
+Architecture and service cases verify
 dependency boundaries and keep Application independent of EF Core.
 
 ## Limited resource and concurrency

@@ -1,8 +1,13 @@
+using ConcertBooking.API.Middleware;
 using ConcertBooking.Application;
 using ConcertBooking.Infrastructure;
 using Microsoft.OpenApi.Models;
+using NLog.Web;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Logging.ClearProviders();
+builder.Host.UseNLog();
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
@@ -39,6 +44,9 @@ if (args.Contains("--initialize-database"))
     await app.Services.InitializeDatabaseAsync(app.Lifetime.ApplicationStopping);
     return;
 }
+
+app.UseMiddleware<GlobalExceptionMiddleware>();
+app.UseMiddleware<CorrelationIdMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {
