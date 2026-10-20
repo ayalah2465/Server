@@ -26,6 +26,10 @@ in middleware. Avoid duplicate logic and unnecessary abstractions.
 הלוגיקה העסקית תרוכז בשירותים, המיפויים ב־Profiles והשגיאות ב־middleware,
 תוך הימנעות מכפילות ומהפשטות מיותרות.
 
-Current gate: Stage 5 completed. Registration, JWT and User/Admin authorization tests passed. Wait for approval before Stage 6. Stage 9 includes the approved optional setup script and Visual Studio verification.
+Current gate: Stage 6 completed. REST CRUD, DTO mapping, validation, database querying,
+Swagger authorization and simulated payment tests passed. Wait for approval before Stage 7.
+Stage 9 includes the approved optional setup script and Visual Studio verification.
 
-מצב נוכחי: שלב 5 הושלם. בדיקות הרשמה, JWT והרשאות User/Admin עברו. נדרש אישור לפני שלב 6. שלב 9 כולל את סקריפט ההכנה האופציונלי ואת בדיקת התאימות ל־Visual Studio שאושרו.
+מצב נוכחי: שלב 6 הושלם. בדיקות CRUD, מיפוי DTO, ולידציה, שאילתות מסד,
+הרשאה ב־Swagger ותשלום מדומה עברו. נדרש אישור לפני שלב 7. שלב 9 כולל את
+סקריפט ההכנה האופציונלי ואת בדיקת התאימות ל־Visual Studio שאושרו.

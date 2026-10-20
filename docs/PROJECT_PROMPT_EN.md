@@ -87,4 +87,4 @@ Tests: run all relevant suites, verify at least two migrations, reproduce setup 
 
 Stages 1-4 are complete. Stage 5 was approved and completed: registration, password hashing, login, signed JWTs, User/Admin claims, protected routes and disposable demo access were implemented. Unit and real API/PostgreSQL tests cover valid and invalid login, validation, duplicate registration, invalid/expired tokens, 401, 403 and role permissions. Concert CRUD, API booking endpoints and payment are not implemented yet. GitHub publication status is recorded separately in the stage report.
 
-Wait for the student’s approval before Stage 6. After every subsequent server stage, summarize changes, test results, and limitations, then request approval for the next stage.
+Stages 1–6 are complete. The Stage 6 gate passed 23 Application tests, 12 PostgreSQL Infrastructure tests and 5 API tests. Wait for the student’s approval before Stage 7. After every subsequent server stage, summarize changes, test results, and limitations, then request approval for the next stage.

@@ -20,6 +20,11 @@ public sealed class BookingRepository(AppDbContext dbContext) : IBookingReposito
             booking => booking.UserId == userId && booking.ConcertId == concertId && booking.Status == BookingStatus.Confirmed,
             cancellationToken);
 
+    public Task<Booking?> GetByIdAsync(Guid bookingId, Guid userId, CancellationToken cancellationToken) =>
+        dbContext.Bookings.AsNoTracking()
+            .Include(booking => booking.Concert)
+            .SingleOrDefaultAsync(booking => booking.Id == bookingId && booking.UserId == userId, cancellationToken);
+
     public void Add(Booking booking) => dbContext.Bookings.Add(booking);
 
     public async Task SaveChangesAsync(CancellationToken cancellationToken)

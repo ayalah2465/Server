@@ -252,6 +252,8 @@ public sealed class DatabaseTests : IAsyncLifetime
             await release.Task.WaitAsync(cancellationToken);
             return result;
         }
+        public Task<Booking?> GetByIdAsync(Guid bookingId, Guid userId, CancellationToken cancellationToken) =>
+            inner.GetByIdAsync(bookingId, userId, cancellationToken);
         public void Add(Booking booking) => inner.Add(booking);
         public Task SaveChangesAsync(CancellationToken cancellationToken) => inner.SaveChangesAsync(cancellationToken);
         public Task<IApplicationTransaction> BeginTransactionAsync(CancellationToken cancellationToken) => inner.BeginTransactionAsync(cancellationToken);

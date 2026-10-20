@@ -5,12 +5,13 @@ ticket prices, and clearly labelled simulated payment. No card details or real p
 
 ## Current stage
 
-Authentication stage complete: .NET 8, Domain/Application/Infrastructure/API layers,
+REST API stage complete: .NET 8, Domain/Application/Infrastructure/API layers,
 xUnit/Moq architecture tests, and PostgreSQL integration tests. Entities, Fluent API
 relationships, two migrations, repeatable demo seed data, and transactional booking
 logic are implemented. Registration, login, JWT validation and User/Admin authorization
-are also implemented. Concert CRUD, API booking endpoints, payment and client behavior
-are not implemented yet.
+are also implemented. Concert and instrument CRUD, database filtering/sorting/pagination,
+booking API endpoints and clearly labelled simulated payment are implemented. The React
+client is not implemented yet.
 The solution uses Clean Architecture: Domain has no external dependencies;
 Application references Domain; Infrastructure references Application; API references
 Application and Infrastructure. API uses Infrastructure only for dependency registration.
@@ -67,6 +68,14 @@ JWTs contain the user ID, email, display name and role, expire after the configu
 period, and are validated for issuer, audience, signature and lifetime. The signing
 key is required through User Secrets or `Jwt__SigningKey`; it is not stored in Git.
 
+Public concert routes support details and a paged list. The list accepts `search`,
+`instrument`, `fromUtc`, `toUtc`, `sortBy`, `sortDirection`, `page` and `pageSize` query
+parameters. Admin JWTs can create, update and delete concerts and instruments. User JWTs
+can create bookings at `POST /api/concerts/{concertId}/bookings` with
+`{"approved":true}` and read their booking from the returned Location.
+The flag only demonstrates a successful payment decision; the API never requests or
+stores card information. Swagger UI's **Authorize** button accepts the JWT returned by login.
+
 ### Tests
 
 ```sh
@@ -84,8 +93,9 @@ The integration and API tests require real PostgreSQL and deliberately fail when
 is absent. Each test creates and drops its own randomly named `concert_test_*` database;
 the configured application database is not reset. Infrastructure cases verify fresh
 migrations, model consistency, repeatable seed data, relationships, UTC reads, database
-constraints and concurrent booking behavior. API cases verify registration, login and
-role authorization. Architecture cases verify
+constraints and concurrent booking behavior. API cases verify registration, login,
+role authorization, admin CRUD, database query behavior, booking ownership and 409
+conflicts. Architecture and service cases verify
 dependency boundaries and keep Application independent of EF Core.
 
 ## Limited resource and concurrency

@@ -40,11 +40,25 @@ public sealed class BookingService(IBookingRepository repository, TimeProvider t
         {
             await repository.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
-            return BookingResult.Success(booking.Id);
+            return BookingResult.Success(booking.Id, booking.TicketPrice);
         }
         catch (ConcurrencyConflictException)
         {
             return BookingResult.Rejected(BookingFailure.Conflict);
         }
+    }
+
+    public async Task<BookingDetails?> GetAsync(Guid userId, Guid bookingId, CancellationToken cancellationToken = default)
+    {
+        var booking = await repository.GetByIdAsync(bookingId, userId, cancellationToken);
+        return booking is null ? null : new BookingDetails(
+            booking.Id,
+            booking.ConcertId,
+            booking.Concert.Title,
+            booking.Concert.StartsAtUtc,
+            booking.CreatedAtUtc,
+            booking.TicketPrice,
+            booking.Status.ToString(),
+            "SimulatedApproved");
     }
 }

@@ -5,7 +5,10 @@ using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text;
 using ConcertBooking.API.Models;
+using ConcertBooking.Application.Common;
+using ConcertBooking.Application.Concerts;
 using ConcertBooking.Infrastructure.Persistence;
+using AutoMapper;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
@@ -108,8 +111,86 @@ public sealed class AuthenticationApiTests : IAsyncLifetime
         Assert.Equal(HttpStatusCode.Unauthorized, (await client.GetAsync("/api/access/user")).StatusCode);
     }
 
+    [Fact]
+    public async Task Admin_crud_and_public_query_support_mapping_filter_sort_and_database_pagination()
+    {
+        await SetAuthorizationAsync("admin@concert.local", "DemoAdmin123!");
+        using (var scope = factory.Services.CreateScope())
+            scope.ServiceProvider.GetRequiredService<IMapper>().ConfigurationProvider.AssertConfigurationIsValid();
+
+        var instruments = await client.GetFromJsonAsync<List<InstrumentResponse>>("/api/instruments");
+        var piano = Assert.Single(instruments!, item => item.Name == "Piano");
+        var create = await client.PostAsJsonAsync("/api/concerts", new
+        {
+            title = "Pagination Test Concert", description = "Created by API integration test",
+            venue = "Test Hall", startsAtUtc = DateTime.UtcNow.AddDays(20), capacity = 4,
+            ticketPrice = 50.25m, instrumentIds = new[] { piano.Id }
+        });
+        Assert.Equal(HttpStatusCode.Created, create.StatusCode);
+        Assert.NotNull(create.Headers.Location);
+        var concert = await create.Content.ReadFromJsonAsync<ConcertResponse>();
+        Assert.Equal(4, concert!.RemainingSeats);
+
+        var page = await client.GetFromJsonAsync<PagedResult<ConcertResponse>>(
+            "/api/concerts?search=Pagination&instrument=Piano&sortBy=price&sortDirection=desc&page=1&pageSize=1");
+        Assert.Equal(1, page!.PageSize);
+        Assert.Equal(1, page.TotalCount);
+        Assert.Equal(concert.Id, Assert.Single(page.Items).Id);
+
+        var update = await client.PutAsJsonAsync($"/api/concerts/{concert.Id}", new
+        {
+            title = "Updated Concert", description = "Updated", venue = "Updated Hall",
+            startsAtUtc = DateTime.UtcNow.AddDays(21), capacity = 5, ticketPrice = 60m,
+            instrumentIds = new[] { piano.Id }
+        });
+        Assert.Equal(HttpStatusCode.NoContent, update.StatusCode);
+        Assert.Equal("Updated Concert", (await client.GetFromJsonAsync<ConcertResponse>($"/api/concerts/{concert.Id}"))!.Title);
+
+        Assert.Equal(HttpStatusCode.NoContent, (await client.DeleteAsync($"/api/concerts/{concert.Id}")).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync($"/api/concerts/{concert.Id}")).StatusCode);
+
+        var createInstrument = await client.PostAsJsonAsync("/api/instruments", new { name = "Cello" });
+        Assert.Equal(HttpStatusCode.Created, createInstrument.StatusCode);
+        var cello = await createInstrument.Content.ReadFromJsonAsync<InstrumentResponse>();
+        Assert.Equal(HttpStatusCode.Conflict, (await client.PostAsJsonAsync("/api/instruments", new { name = "cello" })).StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, (await client.PutAsJsonAsync($"/api/instruments/{cello!.Id}", new { name = "Double Bass" })).StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, (await client.DeleteAsync($"/api/instruments/{cello.Id}")).StatusCode);
+    }
+
+    [Fact]
+    public async Task Booking_requires_authentication_and_approved_simulated_payment_and_prevents_duplicates()
+    {
+        var concertPage = await client.GetFromJsonAsync<PagedResult<ConcertResponse>>("/api/concerts?pageSize=10");
+        var concert = Assert.Single(concertPage!.Items);
+        Assert.Equal(HttpStatusCode.Unauthorized,
+            (await client.PostAsJsonAsync($"/api/concerts/{concert.Id}/bookings", new { approved = true })).StatusCode);
+
+        await SetAuthorizationAsync("user@concert.local", "DemoUser123!");
+        Assert.Equal(HttpStatusCode.BadRequest,
+            (await client.PostAsJsonAsync($"/api/concerts/{concert.Id}/bookings", new { approved = false })).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound,
+            (await client.PostAsJsonAsync($"/api/concerts/{Guid.NewGuid()}/bookings", new { approved = true })).StatusCode);
+
+        var booked = await client.PostAsJsonAsync($"/api/concerts/{concert.Id}/bookings", new { approved = true });
+        Assert.Equal(HttpStatusCode.Created, booked.StatusCode);
+        Assert.NotNull(booked.Headers.Location);
+        Assert.Equal("SimulatedApproved", (await booked.Content.ReadFromJsonAsync<ConcertBooking.Application.Bookings.BookingDetails>())!.PaymentStatus);
+        Assert.Equal(HttpStatusCode.OK, (await client.GetAsync(booked.Headers.Location)).StatusCode);
+        Assert.Equal(HttpStatusCode.Conflict,
+            (await client.PostAsJsonAsync($"/api/concerts/{concert.Id}/bookings", new { approved = true })).StatusCode);
+
+        await SetAuthorizationAsync("admin@concert.local", "DemoAdmin123!");
+        Assert.Equal(HttpStatusCode.Conflict, (await client.DeleteAsync($"/api/concerts/{concert.Id}")).StatusCode);
+    }
+
     private Task<HttpResponseMessage> LoginAsync(string email, string password) =>
         client.PostAsJsonAsync("/api/auth/login", new { email, password });
+
+    private async Task SetAuthorizationAsync(string email, string password)
+    {
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+            "Bearer", await ReadTokenAsync(await LoginAsync(email, password)));
+    }
 
     private static async Task<string> ReadTokenAsync(HttpResponseMessage response)
     {

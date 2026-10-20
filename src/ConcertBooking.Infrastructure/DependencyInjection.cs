@@ -1,6 +1,8 @@
 using System.Text;
 using ConcertBooking.Application.Authentication;
 using ConcertBooking.Application.Bookings;
+using ConcertBooking.Application.Concerts;
+using ConcertBooking.Application.Instruments;
 using ConcertBooking.Infrastructure.Authentication;
 using ConcertBooking.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -25,6 +27,8 @@ public static class DependencyInjection
             options.UseNpgsql(connectionString);
         });
         services.AddScoped<IBookingRepository, BookingRepository>();
+        services.AddScoped<IConcertRepository, ConcertRepository>();
+        services.AddScoped<IInstrumentRepository, InstrumentRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddSingleton<IPasswordService, PasswordService>();
         services.AddSingleton<ITokenService, JwtTokenService>();
