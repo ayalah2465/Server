@@ -24,7 +24,7 @@ public static class DependencyInjection
             if (string.IsNullOrWhiteSpace(connectionString))
                 throw new InvalidOperationException("Configure ConnectionStrings:Default through User Secrets or environment variables.");
 
-            options.UseNpgsql(connectionString);
+            options.UseNpgsql(NormalizeConnectionString(connectionString));
         });
         services.AddScoped<IBookingRepository, BookingRepository>();
         services.AddScoped<IConcertRepository, ConcertRepository>();
@@ -63,6 +63,26 @@ public static class DependencyInjection
             });
         services.AddAuthorization();
         return services;
+    }
+
+    private static string NormalizeConnectionString(string connectionString)
+    {
+        if (!Uri.TryCreate(connectionString, UriKind.Absolute, out var uri)
+            || uri.Scheme is not ("postgres" or "postgresql"))
+            return connectionString;
+
+        var credentials = uri.UserInfo.Split(':', 2);
+        if (credentials.Length != 2)
+            throw new InvalidOperationException("The PostgreSQL connection URL has no password.");
+
+        return new Npgsql.NpgsqlConnectionStringBuilder
+        {
+            Host = uri.Host,
+            Port = uri.IsDefaultPort ? 5432 : uri.Port,
+            Username = Uri.UnescapeDataString(credentials[0]),
+            Password = Uri.UnescapeDataString(credentials[1]),
+            Database = uri.AbsolutePath.TrimStart('/')
+        }.ConnectionString;
     }
 
     public static async Task InitializeDatabaseAsync(this IServiceProvider services, CancellationToken cancellationToken = default)

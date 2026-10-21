@@ -62,6 +62,7 @@ app.UseHttpsRedirection();
 app.UseCors("Client");
 app.UseAuthentication();
 app.UseAuthorization();
+app.MapGet("/health", () => Results.Ok(new { status = "healthy" })).AllowAnonymous();
 app.MapControllers();
 app.Run();
 

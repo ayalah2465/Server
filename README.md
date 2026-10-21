@@ -63,6 +63,24 @@ These credentials are intentionally public demonstration data, not secrets. They
 not be reused for real accounts. Registration always creates a User account; the Admin
 role cannot be selected by a registration request.
 
+### Optional guided setup
+
+The manual commands above remain the reference. For a guided setup that checks tools,
+asks for a local password without displaying it, starts PostgreSQL, creates User Secrets,
+builds, initializes and tests the solution, run one of:
+
+```sh
+./scripts/setup-local.sh
+```
+
+```powershell
+.\scripts\setup-local.ps1
+```
+
+The scripts write the chosen database password only to the ignored local `.env` file and
+the connection string/JWT key to .NET User Secrets. They do not commit or print them.
+See [Visual Studio 2022 instructions](docs/VISUAL_STUDIO.md) for direct solution use.
+
 Authentication routes are `POST /api/auth/register` and `POST /api/auth/login`.
 JWTs contain the user ID, email, display name and role, expire after the configured
 period, and are validated for issuer, audience, signature and lifetime. The signing
@@ -129,6 +147,19 @@ ASPNETCORE_ENVIRONMENT=Development dotnet ef migrations add <MigrationName> --pr
 
 Secrets, build outputs and local databases must not enter Git. `docker compose down`
 stops the database and retains its volume; avoid `down -v` unless deletion is intended.
+
+## Render deployment
+
+`render.yaml` and `Dockerfile` define the API and PostgreSQL services. The container
+applies committed migrations and repeatable seed data before starting the API. Create a
+Render Blueprint from this repository, set `AllowedOrigins__0` to the deployed client's
+exact HTTPS origin, and keep the generated database connection and JWT signing key in
+Render environment variables. `/health` is the health-check endpoint.
+
+The client must be deployed from its separate repository. Its `VITE_API_URL` is the
+public API HTTPS address; the matching client origin belongs in the server's
+`AllowedOrigins__0`. These values are configuration, while database and JWT credentials
+remain secrets. Deployment requires access to the student's Render account.
 
 See [the bilingual plan](PLAN.md). Each server stage requires tests and approval
 before the next stage. The client stage has no intermediate approval gates.

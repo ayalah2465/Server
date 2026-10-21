@@ -85,4 +85,4 @@ Tests: run all relevant suites, verify at least two migrations, reproduce setup 
 
 ## 5. Current status and next gate
 
-Stages 1–8 are complete. The separate React client implements registration, login, server pagination, details, simulated booking and visible conflict handling. Unit tests, a production build and a Chromium end-to-end flow against the real API and PostgreSQL passed. Wait for the student’s approval before Stage 9, which performs final submission, Visual Studio, setup and deployment work.
+Stages 1–9 are implemented locally. The separate React client, guided setup scripts, Visual Studio instructions, Docker and Render Blueprints are prepared and validated where local access permits. The server repository is published. Publishing the separate client repository and creating Render services require valid access to the student’s GitHub and Render accounts.

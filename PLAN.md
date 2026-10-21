@@ -26,12 +26,13 @@ in middleware. Avoid duplicate logic and unnecessary abstractions.
 הלוגיקה העסקית תרוכז בשירותים, המיפויים ב־Profiles והשגיאות ב־middleware,
 תוך הימנעות מכפילות ומהפשטות מיותרות.
 
-Current gate: Stage 8 completed. The separate React client passed its unit, production-build
-and Chromium end-to-end checks against the real API and PostgreSQL. Wait for approval before
-Stage 9.
+Current gate: Stage 9 implementation completed. Clean setup, Visual Studio and Render files,
+separate repositories, documentation and final checks are prepared. Server publication is
+current; client GitHub and Render publication require working access to the student's accounts.
 Stage 9 includes the approved optional setup script and Visual Studio verification.
 
-מצב נוכחי: שלב 8 הושלם. לקוח React הנפרד עבר בדיקות יחידה, production build ובדיקת
-Chromium מקצה לקצה מול ה־API האמיתי ו־PostgreSQL. נדרש אישור לפני שלב 9.
+מצב נוכחי: מימוש שלב 9 הושלם. הוכנו התקנה נקייה, קובצי Visual Studio ו־Render,
+מאגרים נפרדים, תיעוד ובדיקות סופיות. השרת מעודכן ב־GitHub; פרסום הלקוח ב־GitHub
+והפריסה ב־Render דורשים גישה תקינה לחשבונות הסטודנטית.
 שלב 9 כולל את
 סקריפט ההכנה האופציונלי ואת בדיקת התאימות ל־Visual Studio שאושרו.

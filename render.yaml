@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: concert-booking-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: ConnectionStrings__Default
+        fromDatabase:
+          name: concert-booking-db
+          property: connectionString
+      - key: Jwt__SigningKey
+        generateValue: true
+      - key: AllowedOrigins__0
+        sync: false
+
+databases:
+  - name: concert-booking-db
+    databaseName: concert_booking
+    user: concert_booking
